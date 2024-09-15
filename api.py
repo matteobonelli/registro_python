@@ -26,6 +26,8 @@ result, column =  dbInstance.execute_query(procedure)
 
 results = [dict(zip(column, row)) for row in result]
 
+app_logger = utilModule.getLogger()
+
 print(results)
 
 data = [
@@ -68,6 +70,7 @@ def get_results():
 
 @app.route('/log', methods=['GET'])
 def get_log():
+    app_logger.info("Get Log API called")
     time.sleep(5)
     try:
         url = "http://127.0.0.1:3000/log"
@@ -78,14 +81,19 @@ def get_log():
         response = requests.get(url, params=params)
         if response.status_code == 200:
                 print(response.json())
+                app_logger.info("Get Log API successfull")
         else:
             print("Error:", response.text)
+            utilModule.logError("Get Log API error: " + response.text )
+        
         
         return jsonify(response.json())
 
     except UnhautorizedException as e:
+        utilModule.logError("Get Log API error: " + str(e) )
         return jsonify({'error': str(e)}), 401
     except Exception as e:
+        utilModule.logError("Get Log API error: " + str(e) )
         return jsonify({'error': str(e)}), 500
 
 

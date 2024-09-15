@@ -4,6 +4,9 @@ import re
 from datetime import datetime
 import matplotlib.pyplot as plt
 from unhautorizedException import UnhautorizedException
+import logging
+from logging.handlers import TimedRotatingFileHandler
+import os
 
 
 config = configparser.ConfigParser()
@@ -83,3 +86,61 @@ def generateGraphic(xValues, yValues):
 
     # Step 5: Display the chart
     plt.show()
+
+def get_current_date():
+    now = datetime.now()
+    return now.strftime('%Y-%m-%d')
+
+def getLogger():
+    try:
+        # Define the log directory
+        log_directory = 'C:\\Users\\bonel\\Desktop\\logs'
+        os.makedirs(log_directory, exist_ok=True)
+
+        # Define log files with today's date
+        app_log_file = os.path.join(log_directory, f'{get_current_date()}_app_python.log')
+
+        # Create a logger for general application logs
+        app_logger = logging.getLogger('app_logger')
+        app_logger.setLevel(logging.INFO)
+
+        # Create a handler for writing application log files with daily rotation
+        app_handler = TimedRotatingFileHandler(app_log_file, when='midnight', interval=1, backupCount=30)
+        app_handler.suffix = "%Y-%m-%d"  # Log file name will have date suffix
+
+        # Create a formatter and set it to the handler
+        formatter = logging.Formatter('%(asctime)s.%(msecs)03d %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        app_handler.setFormatter(formatter)
+
+        # Add the handler to the logger
+        app_logger.addHandler(app_handler)
+
+        return app_logger
+    except Exception as e:
+        logError(str(e))
+
+def logError(message):
+    # Define the log directory
+    log_directory = 'C:\\Users\\bonel\\Desktop\\logs'
+    os.makedirs(log_directory, exist_ok=True)
+
+    # Define the error log file with today's date
+    error_log_file = os.path.join(log_directory, f'error_python_{get_current_date()}.log')
+
+    # Create a logger for error logs
+    error_logger = logging.getLogger('error_logger')
+    error_logger.setLevel(logging.ERROR)
+
+    # Create a handler for writing error log files with daily rotation
+    error_handler = TimedRotatingFileHandler(error_log_file, when='midnight', interval=1, backupCount=30)
+    error_handler.suffix = "%Y-%m-%d"  # Log file name will have date suffix
+
+    # Create a formatter and set it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    error_handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    error_logger.addHandler(error_handler)
+
+    # Log the error message
+    error_logger.error(message)
